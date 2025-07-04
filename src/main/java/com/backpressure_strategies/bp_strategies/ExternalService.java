@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
 
-record WebTraffic(String url, String ip, long timeStamp) {}
+record WebTraffic(String url, String IP, long timeStamp) {}
 
 @Service
 public class ExternalService {
