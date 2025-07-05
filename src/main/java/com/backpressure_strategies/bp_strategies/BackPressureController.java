@@ -13,16 +13,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class BackPressureController {
 
     private BackPressureService backPressureService;
+    private BackPressureLimitRate limitRateService;
 
     @Autowired
-    public BackPressureController(BackPressureService backPressureService) {
+    public BackPressureController(BackPressureService backPressureService, BackPressureLimitRate limitRateService) {
         this.backPressureService = backPressureService;
+        this.limitRateService = limitRateService;
     }
     
 
     @GetMapping(value="/backpressure/strategy/onbuffer", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<WebTraffic> getOnBufferStrategy() {
-        return backPressureService.backPressureBuffer();
+        return limitRateService.backPressureBuffer();
     }
     
 }
