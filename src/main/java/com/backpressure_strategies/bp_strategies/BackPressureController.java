@@ -2,6 +2,8 @@ package com.backpressure_strategies.bp_strategies;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backpressure_strategies.bp_strategies.model.WebTraffic;
+
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;

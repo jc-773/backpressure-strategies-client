@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import reactor.core.publisher.Flux;
+import com.backpressure_strategies.bp_strategies.model.WebTraffic;
 
-record WebTraffic(String url, String IP, long timeStamp) {}
+import reactor.core.publisher.Flux;
 
 @Service
 public class ExternalService {

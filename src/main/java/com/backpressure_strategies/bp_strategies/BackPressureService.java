@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.backpressure_strategies.bp_strategies.model.WebTraffic;
+
 import reactor.core.publisher.BufferOverflowStrategy;
 import reactor.core.publisher.Flux;
 
@@ -51,7 +53,7 @@ public class BackPressureService {
     }
 
     private boolean isIpValid(WebTraffic webTraffic) {
-        return !webTraffic.IP().equalsIgnoreCase("null") || !webTraffic.IP().isEmpty();
+        return !webTraffic.getIP().equalsIgnoreCase("null") || !webTraffic.getIP().isEmpty();
     }
 
     private void addDroppedItemsToList(WebTraffic droppedTraffic) {
