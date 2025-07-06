@@ -3,6 +3,8 @@ package com.backpressure_strategies.bp_strategies;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,19 +16,20 @@ import com.backpressure_strategies.bp_strategies.model.WebTraffic;
 
 import reactor.core.publisher.BufferOverflowStrategy;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 @Service
-public class BackPressureLimitRate {
-    private static final Logger log = LoggerFactory.getLogger(BackPressureLimitRate.class);
+public class BackPressureBackupQueue {
+    private static final Logger log = LoggerFactory.getLogger(BackPressureBackupQueue.class);
     
     private ExternalService externalService;
 
-    private List<WebTraffic> listOfDroppedItems; 
-
+    private Queue<WebTraffic> backupBufferQueue;
+    
     @Autowired
-    public BackPressureLimitRate(ExternalService externalService) {
+    public BackPressureBackupQueue(ExternalService externalService) {
         this.externalService = externalService;
-        this.listOfDroppedItems = new ArrayList<>();
+        this.backupBufferQueue = new ConcurrentLinkedDeque<>();
     }
 
     public Flux<WebTraffic> backPressureBuffer() {
@@ -35,7 +38,7 @@ public class BackPressureLimitRate {
         return publisher
             .filter(f -> isIpValid(f))
             .limitRate(25)
-            .onBackpressureBuffer(100, dropped -> addDroppedItemsToList(dropped), BufferOverflowStrategy.DROP_OLDEST)
+            .onBackpressureBuffer(100, dropped -> addDroppedItemsToBackupBuffer(dropped), BufferOverflowStrategy.DROP_OLDEST)
             .delayElements(Duration.ofSeconds(1));
     }
 
@@ -43,8 +46,8 @@ public class BackPressureLimitRate {
         return !webTraffic.getIP().equalsIgnoreCase("null") || !webTraffic.getIP().isEmpty();
     }
 
-    private void addDroppedItemsToList(WebTraffic droppedTraffic) {
-        listOfDroppedItems.add(droppedTraffic);
-        log.info("there have been {} dropped items.", listOfDroppedItems.size());
+    private void addDroppedItemsToBackupBuffer(WebTraffic droppedTraffic) {
+       backupBufferQueue.add(droppedTraffic);
+       log.info("{} was added to the queue and popped", droppedTraffic);
     }
 }

@@ -1,4 +1,4 @@
-package com.backpressure_strategies.bp_strategies;
+package com.backpressure_strategies.bp_strategies.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

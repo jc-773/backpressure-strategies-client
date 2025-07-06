@@ -6,12 +6,12 @@ public class WebTraffic {
     private String IP;
     private long timeStamp;
 
-    public WebTraffic(String url, String iP, long timeStamp) {
+    public WebTraffic(String url, String IP, long timeStamp) {
         this.url = url;
-        IP = iP;
+        this.IP = IP;
         this.timeStamp = timeStamp;
     }
-    
+
     public String getUrl() {
         return url;
     }

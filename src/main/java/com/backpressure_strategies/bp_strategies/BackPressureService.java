@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.backpressure_strategies.bp_strategies.common.ExternalService;
 import com.backpressure_strategies.bp_strategies.model.WebTraffic;
 
 import reactor.core.publisher.BufferOverflowStrategy;
