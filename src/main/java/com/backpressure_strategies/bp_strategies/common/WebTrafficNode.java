@@ -14,7 +14,7 @@ public class WebTrafficNode {
         this.value = value;
         this.next = next;
     }
-   
+
     public WebTraffic getValue() {
         return value;
     }
@@ -26,7 +26,7 @@ public class WebTrafficNode {
     public WebTrafficNode getNext() {
         return next;
     }
-    
+
     public void setNext(WebTrafficNode next) {
         this.next = next;
     }
