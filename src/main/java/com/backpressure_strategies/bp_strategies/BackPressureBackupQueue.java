@@ -3,6 +3,7 @@ package com.backpressure_strategies.bp_strategies;
 import java.time.Duration;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ public class BackPressureBackupQueue {
 
     private WebTrafficDeque backupBufferQueue;
 
+    private final int MAX_SIZE = 100;
+
     @Autowired
     public BackPressureBackupQueue(ExternalService externalService) {
         this.externalService = externalService;
@@ -33,22 +36,37 @@ public class BackPressureBackupQueue {
     public Flux<WebTraffic> backPressureBuffer() {
         // publisher that emits flux's of webtraffic
         var publisher = externalService.consumeWebTraffic();
+        AtomicInteger bufferSize = new AtomicInteger();
         log.info("publisher consumed..");
 
-        return publisher
-                // filter each webtraffic object with a local validation methodd
-                .filter(f -> isIpValid(f))
-                // limit 25 webtraffic events at a time (is this even necessary with
-                // onBackPressureBuffer set to n)
-                .limitRate(25)
-                // do, intentionally created to not return anything
-                .doOnNext(l -> log.info("web traffic event: {} was consumed", l))
-                // (maxSize, Consumer<Webtraffic> callback, actual strategy you want to use)
-                .onBackpressureBuffer(100, dropped -> addDroppedItemsToBackupBuffer(dropped),
-                        BufferOverflowStrategy.DROP_OLDEST)
-                // TODO: once queue becomes empty enough to start taking events, should dump
-                // from backup
-                .delayElements(Duration.ofSeconds(1));
+        // TODO: Have to step away but finish refill mechanism
+
+        // return publisher
+        // // filter each webtraffic object with a local validation methodd
+        // .filter(this::isIpValid)
+        // .doOnNext(e -> bufferSize.incrementAndGet())
+        // .onBackpressureBuffer(
+        // MAX_SIZE,
+        // dropped -> {
+        // bufferSize.decrementAndGet();
+        // addDroppedItemsToBackupBuffer(dropped);
+        // },
+        // BufferOverflowStrategy.DROP_OLDEST)
+        // .map(e -> {
+        // var x = bufferSize.decrementAndGet();
+        // determineLoadFactorForFilling(e, x);
+        // })
+        // .delayElements(Duration.ofSeconds(1));
+
+        // TODO: remove placeholder
+        return null;
+    }
+
+    private WebTraffic determineLoadFactorForFilling(WebTraffic e, int x) {
+        while ((double) x / this.MAX_SIZE < 0.95) {
+            backupBufferQueue.drain();
+        }
+        return e;
     }
 
     private boolean isIpValid(WebTraffic webTraffic) {

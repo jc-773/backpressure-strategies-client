@@ -27,7 +27,9 @@ public class WebTrafficDeque {
         this.queueCapacity = size;
     }
 
-    public WebTraffic get(int index) {
+    public synchronized WebTraffic get(int index) {
+        if (index < 0 || index >= this.length)
+            throw new IndexOutOfBoundsException("index exceeds capacity of queue");
         var node = head.next;
         var current = 0;
         while (node != null) {
@@ -40,16 +42,12 @@ public class WebTrafficDeque {
         return null;
     }
 
-    public void insertHead(WebTraffic event) {
+    public synchronized void insertHead(WebTraffic event) {
         if (isQueueAtCapacity()) {
-            log.info("Queue is at capacity of {}...", this.queueCapacity);
             return;
         }
         var lf = getQueueLoadFactor();
-        if (lf > 75) {
-            log.info("Queue is currently at capacity of {}, which is to high to insert more events...", lf);
-            return;
-        } else {
+        if (lf < LOAD_FACTOR) {
             var node = new Node(event);
             node.next = head.next;
             head.next = node;
@@ -59,22 +57,19 @@ public class WebTrafficDeque {
         }
     }
 
-    public void insertTail(WebTraffic event) {
+    public synchronized void insertTail(WebTraffic event) {
         if (isQueueAtCapacity()) {
-            log.info("Queue is at capacityu of {}...", this.queueCapacity);
             return;
         }
         var lf = getQueueLoadFactor();
-        if (lf > 75) {
-            log.info("Queue is currently at capacity of {}, which is to high to insert more events...", lf);
-        } else {
+        if (lf < LOAD_FACTOR) {
             tail.next = new Node(event);
             tail = tail.next;
             this.length++;
         }
     }
 
-    public boolean remove(int index) {
+    public synchronized boolean remove(int index) {
         var node = head;
         var current = 0;
         while (node != null && current < index) {
@@ -87,22 +82,24 @@ public class WebTrafficDeque {
                 tail = node;
             node.next = node.next.next;
             this.length--;
-            log.info("Web event removed from queue. Load capacity is now {}", getQueueLoadFactor());
             return true;
         }
         return false;
     }
 
     // drains until the below the threshold of the default load factor of 75%
-    public void drain() {
+    public synchronized void drain() {
         while ((double) this.length / this.queueCapacity >= LOAD_FACTOR) {
-            remove(this.length--);
-            log.info("Draining the current last item in the queue");
+            remove(this.length - 1);
         }
-        log.info("Finished draining Web events out of the queue. Current load factor is {}", getQueueLoadFactor());
     }
 
-    public ArrayList<WebTraffic> getValues() {
+    /*
+     * drains until the below the threshold of the default load factor of 75%
+     * removed events are added into a queue source
+     */
+
+    public synchronized ArrayList<WebTraffic> getValues() {
         var node = head.next;
         var list = new ArrayList<WebTraffic>();
         while (node != null) {
@@ -113,7 +110,7 @@ public class WebTrafficDeque {
     }
 
     // determines when to continue adding back items to the queue
-    public double getQueueLoadFactor() {
+    public synchronized double getQueueLoadFactor() {
         return (double) this.length / this.queueCapacity;
     }
 
