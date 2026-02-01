@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 
 @Service
 public class ExternalService {
-    
+
     private WebClient client;
 
     @Autowired
@@ -20,8 +20,8 @@ public class ExternalService {
 
     public Flux<WebTraffic> consumeWebTraffic() {
         return client.get()
-            .uri("http://localhost:8080/sim/web/traffic")
-            .retrieve()
-            .bodyToFlux(WebTraffic.class);
+                .uri("http://localhost:8082/sim/web/traffic")
+                .retrieve()
+                .bodyToFlux(WebTraffic.class);
     }
 }

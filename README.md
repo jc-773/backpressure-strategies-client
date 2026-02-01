@@ -11,6 +11,7 @@ Think of Reactor Sinks as the nozzle on a water hose. It controls when and how t
 
 - Implements a backup queue that collects dropped items when the downstream can’t keep up. Uses onBackpressureBuffer with OverflowStrategy.OLDEST, which retains the most recent data and drops the oldest when the buffer overflows
 - Created a custom queue for WebTraffic events. This custom queue has a default load factor of 75%. The queue will pause from accepting events and drain if it crosses the default threshold (the plan to make this concurrent is in the works)
+- Using Flux.merge() from an infinite source caused "source starvation" where one large source starved the other. Forcing the infinite source to run on its own thread resolved the issue
 
 ### BackPressureLimitRate.java
 

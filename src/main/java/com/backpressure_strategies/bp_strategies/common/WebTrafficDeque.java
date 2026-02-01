@@ -1,6 +1,7 @@
 package com.backpressure_strategies.bp_strategies.common;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,17 +13,21 @@ import com.backpressure_strategies.bp_strategies.model.WebTraffic;
  */
 
 public class WebTrafficDeque {
-
+    // Setup
     private static Logger log = LoggerFactory.getLogger(WebTrafficDeque.class);
     private static final double LOAD_FACTOR = 0.75;
+    // Node
     private Node head;
     private Node tail;
     private int length;
     private int queueCapacity;
 
     public WebTrafficDeque(int size) {
+        // I'm creating a dummy node
         this.head = new Node(new WebTraffic("dummy", "dummy", 1));
-        this.tail = head;
+        this.tail = new Node(new WebTraffic("dummy", "dummy", 1));
+        this.head.next = tail;
+        this.tail.prev = head;
         this.length = 0;
         this.queueCapacity = size;
     }
@@ -69,6 +74,18 @@ public class WebTrafficDeque {
         }
     }
 
+    // removes and returns the last node
+    public synchronized WebTraffic pop() {
+        if (isEmpty())
+            throw new IllegalStateException("Queue is empty");
+        var node = tail.prev;
+        var replaceNode = node.prev;
+        replaceNode.next = tail;
+        tail.prev = replaceNode;
+        return node.event;
+    }
+
+    // removes but does not return a node
     public synchronized boolean remove(int index) {
         var node = head;
         var current = 0;
@@ -87,11 +104,14 @@ public class WebTrafficDeque {
         return false;
     }
 
-    // drains until the below the threshold of the default load factor of 75%
-    public synchronized void drain() {
-        while ((double) this.length / this.queueCapacity >= LOAD_FACTOR) {
-            remove(this.length - 1);
+    public synchronized List<WebTraffic> drain() {
+        var listOfDrainedEvents = new ArrayList<WebTraffic>();
+        while (!isEmpty()) {
+            var event = pop();
+            log.info("Draining event: {}", event);
+            listOfDrainedEvents.add(event);
         }
+        return listOfDrainedEvents;
     }
 
     /*
@@ -118,6 +138,10 @@ public class WebTrafficDeque {
         return this.length;
     }
 
+    public boolean isEmpty() {
+        return this.head.next == this.tail;
+    }
+
     private boolean isQueueAtCapacity() {
         return this.length == this.queueCapacity;
     }
@@ -127,6 +151,7 @@ public class WebTrafficDeque {
 class Node {
     WebTraffic event;
     Node next;
+    Node prev;
 
     public Node(WebTraffic event) {
         this.event = event;
