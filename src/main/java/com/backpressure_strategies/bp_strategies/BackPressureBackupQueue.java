@@ -18,11 +18,10 @@ import com.backpressure_strategies.bp_strategies.model.WebTraffic;
 
 import reactor.core.publisher.BufferOverflowStrategy;
 import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 @Service
-public class BackPressureBackupQueue {
+public class BackPressureBackupQueue implements BackPressureQueueInterface {
     private static final Logger log = LoggerFactory.getLogger(BackPressureBackupQueue.class);
 
     private ExternalService externalService;
